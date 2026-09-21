@@ -19,6 +19,13 @@ export default function AppRoutes() {
         <Route path="testimonials" element={<ComingSoon title="Client Endorsements" />} />
         <Route path="faq" element={<ComingSoon title="Frequently Asked Questions" />} />
         <Route path="contact" element={<ComingSoon title="Contact & Quotations" />} />
+
+        {/* Policy & Terms Routes */}
+        <Route path="privacy" element={<ComingSoon title="Privacy Policy" />} />
+        <Route path="terms" element={<ComingSoon title="Terms & Conditions" />} />
+
+        {/* Fallback Route - Coming Soon */}
+        <Route path="*" element={<ComingSoon title="Page Coming Soon" />} />
       </Route>
     </Routes>
   );

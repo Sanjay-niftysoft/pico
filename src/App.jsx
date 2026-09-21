@@ -5,7 +5,7 @@ import ScrollToTop from './core/ScrollToTop';
 
 export default function App() {
   return (
-    <BrowserRouter>
+    <BrowserRouter basename="/demo">
       <ScrollToTop />
       <AppRoutes />
     </BrowserRouter>

@@ -169,7 +169,6 @@ export default function Footer() {
               />
             </div>
           </div>
-
         </div>
       </div>
 
@@ -177,10 +176,11 @@ export default function Footer() {
       <div className="bg-[#030B7D] py-6 border-t border-white/5 text-white/80">
         <div className="max-w-[1240px] mx-auto px-6 flex flex-col sm:flex-row justify-between items-center gap-4 text-xs">
           <p>© {new Date().getFullYear()} Physics Instruments Co. All rights reserved.{" "}
-            <a href="https://www.lowcostwebdesign.in/" target="_blank" rel="noopener noreferrer" className="hover:text-sci-cyan transition-colors">Developed by Low Cost Web Design</a></p>
-          <div className="flex gap-6">
-            <a href="" className="text-white/80 hover:text-sci-cyan transition-colors duration-200">ISO 9001:2015 Certified</a>
-            <a href="" className="text-white/80 hover:text-sci-cyan transition-colors duration-200">MSME Registered</a>
+            <a href="https://www.niftysoft.com/" target="_blank" rel="noopener noreferrer" className="hover:text-sci-cyan transition-colors">Developed by Niftysoft Solution Private Limited</a></p>
+          <div className="flex items-center gap-4">
+            <Link to="/privacy" className="hover:text-white transition-colors">Privacy Policy</Link>
+            <span>|</span>
+            <Link to="/terms" className="hover:text-white transition-colors">Terms & Conditions</Link>
           </div>
         </div>
       </div>

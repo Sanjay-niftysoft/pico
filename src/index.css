@@ -5,11 +5,13 @@
 @layer base {
   html {
     scroll-behavior: smooth;
+    background-color: #030B7D;
   }
 
   body {
     @apply font-sans bg-white antialiased overflow-x-hidden;
     color: #0A0E3F;
+    overscroll-behavior-y: auto;
   }
 
   h1,

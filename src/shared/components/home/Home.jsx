@@ -10,14 +10,18 @@ import { Link } from 'react-router-dom';
 import { FaWhatsapp } from 'react-icons/fa';
 
 // Image assets (using relative paths from src/shared/components/home/)
-import heroLab from '../../../assets/images/hero_lab.jpg';
 import heroElectrospinning from '../../../assets/images/hero_electrospinning.jpg';
 import heroEducation from '../../../assets/images/hero_education.jpg';
 import aboutImg from '../../../assets/images/about_equipment.jpg';
 import aboutCollage from '../../../assets/images/about_collage.png';
 import aboutEspinNano from '../../../assets/images/product_espin_nano.jpg';
-
-
+// Helper to prefix asset paths with the correct base path (e.g. for /demo/)
+const getAssetUrl = (url) => {
+  if (url && url.startsWith('/') && !url.startsWith('/demo/')) {
+    return `${import.meta.env.BASE_URL || '/'}${url.slice(1)}`;
+  }
+  return url;
+};
 
 // ============================================================================
 // AUXILIARY COMPONENTS
@@ -104,72 +108,96 @@ function ScrollReveal({ children, delay = 0, duration = 800, distance = "transla
   );
 }
 
-// ============================================================================
-// 1. HERO COMPONENT
-// ============================================================================
-
 function Hero() {
   const [mounted, setMounted] = useState(false);
   const [scrollY, setScrollY] = useState(0);
   const [currentSlide, setCurrentSlide] = useState(0);
 
+  const [touchStart, setTouchStart] = useState(null);
+  const [touchEnd, setTouchEnd] = useState(null);
+
+  const minSwipeDistance = 50;
+
+  const onTouchStart = (e) => {
+    setTouchEnd(null);
+    setTouchStart(e.targetTouches[0].clientX);
+  };
+
+  const onTouchMove = (e) => setTouchEnd(e.targetTouches[0].clientX);
+
+  const onTouchEnd = () => {
+    if (!touchStart || !touchEnd) return;
+    const distance = touchStart - touchEnd;
+    const isLeftSwipe = distance > minSwipeDistance;
+    const isRightSwipe = distance < -minSwipeDistance;
+    if (isLeftSwipe || isRightSwipe) {
+      if (isLeftSwipe) handleNextSlide();
+      if (isRightSwipe) handlePrevSlide();
+    }
+  };
+
   const slides = [
     {
       image: '/banner/banner1.png',
+      mobileImage: '/banner-mobile-view/banner1-removebg-preview.png',
       eyebrow: "CHAAOS SERIES",
       title: <>Non-Linear Dynamics.<br /><span className="text-white">Mapping Chaotic Oscillations.</span></>,
-      desc: "Advanced non-linear dynamics research setups designed for mapping chaotic pendulum oscillations, electronic chaos circuits, bifurcations, and phase space plots."
+      mobileTitle: <>Non-Linear Dynamics.<br /><span className="text-[#030B7D]">Mapping Chaotic Oscillations.</span></>,
+      desc: "Advanced non-linear dynamics research setups designed for mapping chaotic oscillations, bifurcations, and phase space plots."
     },
     {
       image: '/banner/banner2.png',
+      mobileImage: '/banner-mobile-view/banner2-removebg-preview.png',
       eyebrow: "ULTRASONIC INTERFEROMETERS",
       title: <>Acoustic Velocity.<br /><span className="text-white">Precision Wave Measurement.</span></>,
-      desc: "High-precision wave-velocity measurement in liquids operating across single and multiple quartz crystal frequencies. Developed in cooperation with CSIR-NPL, New Delhi."
+      mobileTitle: <>Acoustic Velocity.<br /><span className="text-[#030B7D]">Precision Wave Measurement.</span></>,
+      desc: "High-precision wave-velocity measurement in liquids operating across single and multiple quartz crystal frequencies. Developed in cooperation with CSIR-NPL, New Delhi.",
+      maxWidth: "md:max-w-[450px] lg:max-w-[500px]"
     },
     {
       image: '/banner/banner3.png',
+      mobileImage: '/banner-mobile-view/banner3-removebg-preview.png',
       eyebrow: "LABORATORY STANDARDS",
       title: <>Decade Dial Boxes.<br /><span className="text-white">Reliable Resistance & Capacitance.</span></>,
+      mobileTitle: <>Decade Dial Boxes.<br /><span className="text-[#030B7D]">Reliable Resistance & Capacitance.</span></>,
       desc: "Dial calibration standard decade resistance and capacitance boxes utilizing non-inductive bifilar wound Manganin wire dial resistors."
     },
     {
       image: '/banner/banner4.png',
+      mobileImage: '/banner-mobile-view/banner4-removebg-preview.png',
       eyebrow: "METROLOGY & STANDARDS",
       title: <>Primary Standards.<br /><span className="text-white">Reference Calibration Coils.</span></>,
-      desc: "High-stability reference standard inductors and standard resistors designed for absolute precision inside scientific calibration and research labs."
+      mobileTitle: <>Primary Standards.<br /><span className="text-[#030B7D]">Reference Calibration Coils.</span></>,
+      desc: "High-stability reference standard inductors and standard resistors designed for absolute precision inside scientific calibration and research labs.",
+      maxWidth: "md:max-w-[450px] lg:max-w-[500px]"
     },
     {
       image: '/banner/banner5.png',
-      eyebrow: "VOLTAGE STANDARDS",
+      mobileImage: '/banner-mobile-view/banner5-removebg-preview.png',
+      eyebrow: "ELECTRONIC CELL SUBSTITUTES",
       title: <>Electronic Cell Substitutes.<br /><span className="text-white">Stable Solid-State References.</span></>,
-      desc: "Solid-state, high-stability reference voltage sources designed to replace traditional liquid Daniell and Leclanché chemical standard cells, ensuring zero maintenance."
+      mobileTitle: <>Electronic Cell Substitutes.<br /><span className="text-[#030B7D]">Stable Solid-State References.</span></>,
+      desc: "High-stability, solid-state reference voltage sources designed to replace traditional chemical standard cells with zero maintenance."
     }
   ];
 
   useEffect(() => {
     setMounted(true);
-    const handleScroll = () => {
-      setScrollY(window.scrollY);
-    };
+    const handleScroll = () => setScrollY(window.scrollY);
     window.addEventListener('scroll', handleScroll, { passive: true });
     return () => window.removeEventListener('scroll', handleScroll);
   }, []);
 
-  // Auto-slide every 1 second
   useEffect(() => {
+    const isMobile = window.innerWidth < 768;
     const timer = setInterval(() => {
       setCurrentSlide((prev) => (prev + 1) % slides.length);
-    }, 3000);
+    }, isMobile ? 2000 : 4500);
     return () => clearInterval(timer);
   }, [slides.length]);
 
-  const handlePrevSlide = () => {
-    setCurrentSlide((prev) => (prev - 1 + slides.length) % slides.length);
-  };
-
-  const handleNextSlide = () => {
-    setCurrentSlide((prev) => (prev + 1) % slides.length);
-  };
+  const handlePrevSlide = () => setCurrentSlide((prev) => (prev - 1 + slides.length) % slides.length);
+  const handleNextSlide = () => setCurrentSlide((prev) => (prev + 1) % slides.length);
 
   const handleScrollTo = (e, id) => {
     e.preventDefault();
@@ -178,105 +206,211 @@ function Hero() {
       const headerOffset = 80;
       const elementPosition = element.getBoundingClientRect().top;
       const offsetPosition = elementPosition + window.pageYOffset - headerOffset;
-
-      window.scrollTo({
-        top: offsetPosition,
-        behavior: 'smooth'
-      });
+      window.scrollTo({ top: offsetPosition, behavior: 'smooth' });
     }
   };
 
   return (
-    <section className="relative w-full min-h-screen lg:h-screen lg:min-h-[650px] bg-navy-primary overflow-hidden flex items-center pt-28 pb-16 lg:py-0">
-      {/* Background Images Slideshow with Crossfade & Parallax - Position adjusted on mobile */}
-      {slides.map((slide, index) => (
-        <div
-          key={index}
-          className="absolute inset-0 w-full h-full bg-cover bg-[70%_center] sm:bg-center transition-all duration-[400ms] ease-in-out"
-          style={{
-            backgroundImage: `url("${slide.image}")`,
-            opacity: index === currentSlide ? 1 : 0,
-            transform: `scale(${index === currentSlide ? 1.0 : 1.05}) translateY(${scrollY * 0.15}px)`,
-            zIndex: index === currentSlide ? 1 : 0
-          }}
-        />
-      ))}
+    <section className="relative w-full min-h-[100svh] md:h-screen md:min-h-[650px] overflow-hidden flex flex-col md:flex-row md:items-center bg-[#F8FAFC] md:bg-navy-primary">
 
-      {/* Soft color-neutral dark gradient overlay on the left for text contrast, leaving the product images on the right fully natural */}
-      <div className="absolute inset-0 bg-gradient-to-r from-black/65 via-black/15 to-transparent z-10" />
+      {/* ========================================= */}
+      {/* MOBILE HERO (Only visible below md, < 768px) */}
+      {/* ========================================= */}
+      <div 
+        className="flex md:hidden relative w-full h-[100svh] flex-col justify-between pt-[90px] pb-6 px-4 sm:px-6 z-20 flex-1"
+        onTouchStart={onTouchStart}
+        onTouchMove={onTouchMove}
+        onTouchEnd={onTouchEnd}
+      >
+        {/* Soft laboratory pattern background */}
+        <div className="absolute inset-0 pointer-events-none opacity-40 bg-[radial-gradient(#CBD5E1_1px,transparent_1px)] [background-size:16px_16px]" />
+        
+        {/* Subtle gradients */}
+        <div className="absolute top-[-5%] left-[-20%] w-[80%] h-[50%] bg-blue-100/60 rounded-full blur-3xl pointer-events-none" />
+        <div className="absolute bottom-[-10%] right-[-20%] w-[90%] h-[60%] bg-indigo-50/60 rounded-full blur-3xl pointer-events-none" />
 
-      {/* Far Left and Right Arrow Navigation Controls - Hidden on Mobile */}
+        <div className="relative w-full max-w-[425px] mx-auto flex-1 flex flex-col h-full">
+          <div className="relative w-full flex-1 overflow-visible">
+            {slides.map((slide, index) => {
+              let transform = 'translateX(100%)';
+              let opacity = 0;
+              let zIndex = 0;
+              
+              if (index === currentSlide) {
+                transform = 'translateX(0)';
+                opacity = 1;
+                zIndex = 10;
+              } else if (index === (currentSlide - 1 + slides.length) % slides.length) {
+                transform = 'translateX(-100%)';
+                opacity = 0;
+              }
+
+              return (
+                <div
+                  key={index}
+                  className="absolute inset-0 w-full h-full flex flex-col transition-all duration-500 ease-in-out"
+                  style={{
+                    transform,
+                    opacity,
+                    zIndex,
+                    pointerEvents: index === currentSlide ? 'auto' : 'none'
+                  }}
+                >
+                  <div className="mb-3">
+                    <span className="font-heading text-[10px] font-bold tracking-[0.2em] text-[#030B7D] uppercase inline-block border border-[#030B7D]/20 bg-[#030B7D]/5 px-2.5 py-1 rounded shadow-sm backdrop-blur-sm">
+                      {slide.eyebrow}
+                    </span>
+                  </div>
+
+                  <h1 className="text-[26px] xs:text-3xl font-heading font-extrabold text-slate-900 leading-[1.15] mb-3 tracking-tight">
+                    {slide.mobileTitle}
+                  </h1>
+
+                  <p className="text-[13px] xs:text-sm text-slate-600 mb-4 xs:mb-6 font-normal leading-relaxed pr-2" style={{color:'black'}}>
+                    {slide.desc}
+                  </p>
+
+                  <div className="relative flex-1 w-full min-h-[160px] xs:min-h-[200px] flex items-center justify-center mb-4">
+                    <img
+                      src={getAssetUrl(slide.mobileImage || slide.image)}
+                      alt={slide.eyebrow}
+                      className="w-full h-full object-contain drop-shadow-2xl"
+                    />
+                  </div>
+                </div>
+              );
+            })}
+          </div>
+
+          <div className="w-full flex flex-col gap-5 z-20 shrink-0">
+            <div className="flex flex-row justify-center gap-3 w-full">
+              <a 
+                href="#about"
+                onClick={(e) => handleScrollTo(e, 'about')}
+                className="flex-1 font-heading text-[11px] xs:text-xs font-bold uppercase tracking-wider text-white bg-[#030B7D] border border-[#030B7D] py-3.5 xs:py-4 rounded shadow-lg shadow-[#030B7D]/20 hover:bg-[#02075d] transition-all duration-200 text-center cursor-pointer flex items-center justify-center"
+              >
+                Learn More
+              </a>
+              <a 
+                href="#products"
+                onClick={(e) => handleScrollTo(e, 'products')}
+                className="flex-1 font-heading text-[11px] xs:text-xs font-bold uppercase tracking-wider text-[#030B7D] bg-white border border-[#030B7D] py-3.5 xs:py-4 rounded shadow-sm hover:bg-slate-50 transition-all duration-200 text-center cursor-pointer flex items-center justify-center"
+              >
+                Enquiry Now
+              </a>
+            </div>
+
+            <div className="flex items-center justify-between w-full px-1">
+              <div className="flex gap-2">
+                {slides.map((_, idx) => (
+                  <button
+                    key={idx}
+                    onClick={() => setCurrentSlide(idx)}
+                    className={`h-1.5 rounded-full transition-all duration-300 cursor-pointer ${idx === currentSlide ? 'w-6 bg-[#030B7D]' : 'w-2 bg-[#030B7D]/20 hover:bg-[#030B7D]/40'}`}
+                    aria-label={`Go to slide ${idx + 1}`}
+                  />
+                ))}
+              </div>
+              <div className="text-[10px] font-bold text-slate-400 tracking-widest font-heading">
+                0{currentSlide + 1} <span className="opacity-50">/ 0{slides.length}</span>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      {/* ========================================= */}
+      {/* DESKTOP HERO (Hidden below md, >= 768px) */}
+      {/* ========================================= */}
+      <div className="hidden md:block absolute inset-0 w-full h-full z-0">
+        <div className="relative w-full h-full overflow-hidden">
+          {slides.map((slide, index) => (
+            <div
+              key={index}
+              className="absolute inset-0 w-full h-full bg-cover md:bg-[90%_center] lg:bg-[70%_center] bg-[85%_center] bg-no-repeat transition-all duration-[400ms] ease-in-out"
+              style={{
+                backgroundImage: `url("${getAssetUrl(slide.image)}")`,
+                opacity: index === currentSlide ? 1 : 0,
+                transform: `scale(${index === currentSlide ? 1.0 : 1.05}) translateY(${scrollY * 0.15}px)`,
+                zIndex: index === currentSlide ? 1 : 0
+              }}
+            />
+          ))}
+          {/* Dark gradient overlay, desktop only */}
+          <div className="absolute inset-0 bg-gradient-to-r from-black/75 via-black/30 to-transparent z-10 hidden md:block" />
+        </div>
+      </div>
+
+      {/* Arrow nav — large screens (xl) only */}
       <button
         onClick={handlePrevSlide}
-        className="hidden lg:flex absolute left-6 top-1/2 -translate-y-1/2 w-12 h-12 rounded-full border border-white/15 bg-navy-primary/45 text-white items-center justify-center transition-all duration-300 z-30 hover:bg-sci-accent hover:border-sci-accent cursor-pointer hover:scale-105"
+        className="hidden xl:flex absolute left-6 top-1/2 -translate-y-1/2 w-12 h-12 rounded-full border border-white/15 bg-navy-primary/60 text-white items-center justify-center transition-all duration-300 z-30 hover:bg-sci-accent hover:border-sci-accent cursor-pointer hover:scale-105"
         aria-label="Previous Slide"
       >
         <ChevronLeft className="w-5 h-5" />
       </button>
       <button
         onClick={handleNextSlide}
-        className="hidden lg:flex absolute right-6 top-1/2 -translate-y-1/2 w-12 h-12 rounded-full border border-white/15 bg-navy-primary/45 text-white items-center justify-center transition-all duration-300 z-30 hover:bg-sci-accent hover:border-sci-accent cursor-pointer hover:scale-105"
+        className="hidden xl:flex absolute right-6 top-1/2 -translate-y-1/2 w-12 h-12 rounded-full border border-white/15 bg-navy-primary/60 text-white items-center justify-center transition-all duration-300 z-30 hover:bg-sci-accent hover:border-sci-accent cursor-pointer hover:scale-105"
         aria-label="Next Slide"
       >
         <ChevronRight className="w-5 h-5" />
       </button>
 
-      {/* Cinematic Content Grid */}
-      <div className="relative w-full flex items-center z-20 h-full">
-        <div className="max-w-[1240px] mx-auto px-6 w-full relative">
-
-          {/* Slides Content */}
-          <div className="max-w-[700px] text-left relative w-full flex flex-col justify-center py-6 lg:py-0">
+      <div className="hidden md:flex relative w-full items-center z-20 h-full md:h-auto flex-1 md:pt-32 md:pb-12 lg:pt-32 lg:pb-0 md:px-0 bg-transparent">
+        <div className="max-w-[1240px] mx-auto md:px-6 w-full relative">
+          <div className="text-left relative w-full flex flex-col justify-center items-start">
             {slides.map((slide, index) => (
               <div
                 key={index}
-                className={`transition-all duration-700 w-full flex flex-col justify-center ${index === currentSlide
-                  ? 'relative opacity-100 translate-y-0 scale-100 pointer-events-auto z-10'
-                  : 'absolute top-0 left-0 h-full opacity-0 translate-y-4 scale-95 pointer-events-none z-0'
+                className={`w-full flex flex-col justify-center items-start transition-opacity duration-300 ease-in-out md:max-w-[340px] lg:max-w-[550px] ${index === currentSlide
+                  ? 'relative opacity-100 pointer-events-auto z-10'
+                  : 'absolute top-0 left-0 h-full opacity-0 pointer-events-none z-0 invisible'
                   }`}
               >
                 {/* Eyebrow */}
-                <span className="font-heading text-[10px] sm:text-xs lg:text-sm font-bold tracking-[0.25em] text-white uppercase mb-3 inline-block">
-                  {slide.eyebrow}
-                </span>
+                <div className="mb-4">
+                  <span className="font-heading text-xs lg:text-sm font-bold tracking-[0.25em] text-white uppercase inline-block" style={{ textShadow: '0px 2px 6px rgba(0,0,0,0.9), 0px 1px 2px rgba(0,0,0,1)' }}>
+                    {slide.eyebrow}
+                  </span>
+                </div>
 
                 {/* Heading */}
-                <h1 className="text-2xl sm:text-5xl lg:text-6xl font-heading font-extrabold text-white leading-[1.15] mb-5 tracking-tight">
+                <h1 className="text-2xl md:text-2xl lg:text-5xl font-heading font-extrabold text-white leading-[1.2] mb-4 tracking-tight" style={{ textShadow: '0px 4px 16px rgba(0,0,0,0.95), 0px 2px 4px rgba(0,0,0,1)' }}>
                   {slide.title}
                 </h1>
 
                 {/* Supporting description */}
-                <p className="text-sm sm:text-lg text-white/90 mb-6 max-w-[580px] font-normal leading-relaxed">
+                <p className="text-xs lg:text-xl text-white mb-7 font-normal leading-[1.7]" style={{ textShadow: '0px 2px 10px rgba(0,0,0,0.95), 0px 1px 3px rgba(0,0,0,1)' }}>
                   {slide.desc}
                 </p>
 
                 {/* Actions */}
-                <div className="flex flex-col sm:flex-row gap-3.5 w-full sm:w-auto">
-                  <a
-                    href="#products"
-                    onClick={(e) => handleScrollTo(e, 'products')}
-                    className="font-heading text-xs font-bold uppercase tracking-wider text-white bg-sci-accent px-7 py-4 rounded-md hover:bg-blue-700 transition-all duration-200 flex items-center justify-center gap-2 group hover:shadow-lg hover:shadow-sci-accent/25 cursor-pointer w-full sm:w-auto text-center"
-                  >
-                    <span>Explore Our Instruments</span>
-                    <ArrowRight className="w-4 h-4 transition-transform group-hover:translate-x-1" />
-                  </a>
-                  <a
+                <div className="flex flex-row justify-start gap-3 w-auto md:gap-3.5">
+                  <a 
                     href="#about"
                     onClick={(e) => handleScrollTo(e, 'about')}
-                    className="font-heading text-xs font-bold uppercase tracking-wider text-white border border-white/20 px-7 py-4 rounded-md hover:bg-white/10 hover:border-white transition-all duration-200 text-center cursor-pointer w-full sm:w-auto block"
+                    className="flex-none font-heading text-xs md:text-sm font-bold uppercase tracking-wider text-white border border-white/25 px-7 py-4 rounded-md hover:bg-white/10 hover:border-white transition-all duration-200 text-center cursor-pointer"
                   >
-                    About Us
+                    Learn More
+                  </a>
+                  <a 
+                    href="#products"
+                    onClick={(e) => handleScrollTo(e, 'products')}
+                    className="flex-none font-heading text-xs md:text-sm font-bold uppercase tracking-wider text-white bg-sci-accent px-7 py-4 rounded-md hover:bg-blue-700 transition-all duration-200 flex items-center justify-center gap-2 group hover:shadow-lg hover:shadow-sci-accent/25 cursor-pointer text-center"
+                  >
+                    <span>Enquiry Now</span>
+                    <ArrowRight className="w-4 h-4 hidden sm:inline transition-transform group-hover:translate-x-1" />
                   </a>
                 </div>
               </div>
             ))}
           </div>
-
         </div>
       </div>
 
-      {/* Slide Indicators */}
-      <div className="absolute bottom-8 left-0 right-0 flex justify-center gap-2.5 z-30">
+      {/* Slide Indicators Desktop */}
+      <div className="hidden md:flex absolute bottom-8 left-0 right-0 justify-center gap-2.5 z-30">
         {slides.map((_, idx) => (
           <button
             key={idx}
@@ -297,38 +431,111 @@ function Hero() {
 // ============================================================================
 
 function Metrics() {
-  const stats = [
-    { value: 65, suffix: "+", label: "Years of Engineering Excellence", icon: History, logoImg: "/logo2/years.jpg" },
-    { value: 50, suffix: "+", label: "Precision Instruments Developed", icon: Cpu, logoImg: "/logo2/instruments.jpg" },
-    { value: 9001, suffix: "", label: "ISO Certified Quality (9001:2015)", icon: BadgeCheck, raw: "9001", logoImg: "/logo2/iso.png" },
-    { value: 1, suffix: "", label: "MSME Registered Pioneer Company", icon: Award, raw: "MSME", logoImg: "/logo2/msme.png" },
-    { value: 3, suffix: "", label: "IEC Registered Exporter Company", icon: Globe, raw: "IEC", logoImg: "/logo2/iec.png" },
-    { value: 4, suffix: "", label: "100% Make in India Compliant", icon: Factory, raw: "INDIA", logoImg: "/logo2/make in india.png" },
+  const topStats = [
+    {
+      value: 65,
+      suffix: "+",
+      label: "Years of Engineering Excellence",
+      icon: History,
+      logoImg: "/logo2/years.jpg",
+      imgClass: "h-12 w-auto scale-[1.18] object-contain filter grayscale mix-blend-multiply contrast-125"
+    },
+    {
+      value: 50,
+      suffix: "+",
+      label: "Precision Instruments Developed",
+      icon: Cpu,
+      logoImg: "/logo2/instruments.jpg",
+      imgClass: "h-12 w-auto scale-[1.65] object-contain filter grayscale mix-blend-multiply contrast-125"
+    },
+    {
+      value: 9001,
+      suffix: "",
+      label: "ISO Certified Quality (9001:2015)",
+      icon: BadgeCheck,
+      raw: "9001",
+      logoImg: "/logo2/iso.png",
+      imgClass: "h-12 w-auto scale-[1.28] object-contain filter grayscale mix-blend-multiply contrast-125"
+    },
+  ];
+
+  const bottomStats = [
+    {
+      value: 1,
+      suffix: "",
+      label: "Electrical Manufacturer – CE Certificate",
+      icon: ShieldCheck,
+      raw: "CE",
+      logoImg: "/logo2/ce.png",
+      imgClass: "h-8 w-auto object-contain filter grayscale mix-blend-multiply contrast-125"
+    },
+    {
+      value: 1,
+      suffix: "",
+      label: "MSME Registered Pioneer Company",
+      icon: Award,
+      raw: "MSME",
+      logoImg: "/logo2/msme.png",
+      imgClass: "h-12 w-auto scale-[1.32] object-contain filter grayscale mix-blend-multiply contrast-125"
+    },
+    {
+      value: 3,
+      suffix: "",
+      label: "IEC Registered Exporter Company",
+      icon: Globe,
+      raw: "IEC",
+      logoImg: "/logo2/iec.png",
+      imgClass: "h-12 w-auto object-contain filter grayscale mix-blend-multiply contrast-125"
+    },
+    {
+      value: 4,
+      suffix: "",
+      label: "100% Make in India Compliant",
+      icon: Factory,
+      raw: "INDIA",
+      logoImg: "/logo2/make in india.png",
+      imgClass: "h-9 w-auto scale-[1.15] object-contain filter grayscale mix-blend-multiply contrast-125"
+    },
   ];
 
   return (
-    <section className="relative bg-[#E8EAFA] border-b border-[#C5CBF5] overflow-hidden">
+    <section className="relative bg-[#E8EAFA] border-b border-[#C5CBF5] overflow-hidden py-14 sm:py-18 lg:py-24">
       {/* Subtle dotted grid overlay pattern */}
       <div className="absolute inset-0 opacity-[0.03] pointer-events-none bg-[radial-gradient(#030B7D_1px,transparent_1px)] [background-size:24px_24px]" />
-      <div className="max-w-[1240px] mx-auto px-6 py-16 lg:py-20 relative z-10">
-        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-5 sm:gap-6">
-          {stats.map((stat, idx) => {
+      
+      <div className="max-w-[1240px] mx-auto px-4 sm:px-6 lg:px-8 relative z-10">
+        
+        {/* Centered Section Header */}
+        <div className="text-center max-w-[780px] mx-auto mb-10 sm:mb-14">
+          <div className="inline-flex items-center gap-2 font-heading text-[10px] sm:text-[11px] font-bold uppercase tracking-[0.25em] text-black bg-white/85 border border-[#C5CBF5] px-4 py-1.5 rounded-full mb-3.5 shadow-sm backdrop-blur-sm">
+            <BadgeCheck className="w-3.5 h-3.5 text-black" />
+            <span>Accreditations & Certifications</span>
+          </div>
+          <h2 className="font-heading text-2xl xs:text-3xl sm:text-4xl lg:text-5xl font-extrabold text-black tracking-tight leading-[1.15] mb-3 sm:mb-4">
+            Certified Excellence & Industry Recognition
+          </h2>
+          <p className="text-slate-700 text-xs sm:text-sm md:text-base leading-relaxed max-w-[620px] mx-auto font-normal px-2" style={{color:"black"}}>
+            Backed by international quality standards, governmental registrations, and over six decades of dedicated scientific instrument manufacturing.
+          </p>
+        </div>
+
+        {/* Row 1: 3 Big Cards */}
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-4 sm:gap-6 mb-4 sm:mb-6">
+          {topStats.map((stat, idx) => {
             const Icon = stat.icon;
             return (
-              <ScrollReveal key={idx} delay={idx * 120} distance="translate-y-6" className="h-full">
+              <ScrollReveal key={idx} delay={idx * 100} distance="translate-y-6" className="h-full">
                 <div
-                  className="group relative bg-white border border-sci-light/80 rounded-2xl px-5 py-8 sm:px-6 sm:py-10 flex flex-col items-center text-center h-full shadow-sm hover:shadow-xl hover:shadow-sci-blue/10 hover:border-sci-accent/40 hover:-translate-y-1.5 transition-all duration-300 ease-out cursor-default overflow-hidden"
+                  className="group relative bg-white border border-[#D0D6F7] rounded-2xl p-6 sm:p-8 flex flex-col items-center justify-between text-center min-h-[220px] sm:min-h-[240px] shadow-sm hover:shadow-xl hover:shadow-sci-blue/10 hover:border-sci-accent/40 hover:-translate-y-1.5 transition-all duration-300 ease-out cursor-default overflow-hidden"
                 >
-                  {/* Subtle accent glow that appears on hover */}
                   <div className="absolute -top-10 -right-10 w-28 h-28 bg-sci-accent/10 rounded-full blur-2xl opacity-0 group-hover:opacity-100 transition-opacity duration-500" />
 
-                  {/* Icon or Image badge */}
-                  <div className="h-12 flex items-center justify-center mb-4 relative z-10 group-hover:scale-110 transition-transform duration-300">
+                  <div className="w-24 h-14 flex items-center justify-center relative z-10 group-hover:scale-105 transition-transform duration-300">
                     {stat.logoImg ? (
                       <img
-                        src={stat.logoImg}
+                        src={getAssetUrl(stat.logoImg)}
                         alt={stat.label}
-                        className="max-h-full object-contain filter grayscale mix-blend-multiply contrast-125"
+                        className={stat.imgClass || "h-12 w-auto object-contain filter grayscale mix-blend-multiply contrast-125"}
                       />
                     ) : (
                       <div className="w-11 h-11 rounded-full bg-sci-blue/5 flex items-center justify-center text-sci-blue group-hover:bg-sci-accent group-hover:text-white group-hover:rotate-3 transition-all duration-300">
@@ -337,22 +544,57 @@ function Metrics() {
                     )}
                   </div>
 
-                  {/* Number */}
-                  <span className="text-3xl sm:text-4xl lg:text-5xl font-heading font-extrabold text-black mb-2 tracking-tight relative z-10 transition-colors duration-300">
-                    {stat.raw ? (
-                      stat.raw
+                  <div className="flex flex-col items-center my-auto py-2">
+                    <span className="text-3xl sm:text-4xl lg:text-5xl font-heading font-extrabold text-[#030B7D] mb-1.5 sm:mb-2 tracking-tight relative z-10 transition-colors duration-300">
+                      {stat.raw ? stat.raw : <Counter end={stat.value} suffix={stat.suffix} />}
+                    </span>
+                    <span className="text-xs sm:text-sm font-bold text-slate-900 tracking-wide leading-snug max-w-[220px] relative z-10">
+                      {stat.label}
+                    </span>
+                  </div>
+
+                  <span className="absolute bottom-0 left-1/2 -translate-x-1/2 h-[3px] w-0 bg-[#030B7D] rounded-full group-hover:w-1/2 transition-all duration-300" />
+                </div>
+              </ScrollReveal>
+            );
+          })}
+        </div>
+
+        {/* Row 2: 4 Cards */}
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 sm:gap-6">
+          {bottomStats.map((stat, idx) => {
+            const Icon = stat.icon;
+            return (
+              <ScrollReveal key={idx + 3} delay={(idx + 3) * 100} distance="translate-y-6" className="h-full">
+                <div
+                  className="group relative bg-white border border-[#D0D6F7] rounded-2xl p-5 sm:p-6 flex flex-col items-center justify-between text-center min-h-[210px] sm:min-h-[230px] shadow-sm hover:shadow-xl hover:shadow-sci-blue/10 hover:border-sci-accent/40 hover:-translate-y-1.5 transition-all duration-300 ease-out cursor-default overflow-hidden"
+                >
+                  <div className="absolute -top-10 -right-10 w-28 h-28 bg-sci-accent/10 rounded-full blur-2xl opacity-0 group-hover:opacity-100 transition-opacity duration-500" />
+
+                  <div className="w-24 h-14 flex items-center justify-center relative z-10 group-hover:scale-105 transition-transform duration-300">
+                    {stat.logoImg ? (
+                      <img
+                        src={getAssetUrl(stat.logoImg)}
+                        alt={stat.label}
+                        className={stat.imgClass || "h-12 w-auto object-contain filter grayscale mix-blend-multiply contrast-125"}
+                      />
                     ) : (
-                      <Counter end={stat.value} suffix={stat.suffix} />
+                      <div className="w-11 h-11 rounded-full bg-sci-blue/5 flex items-center justify-center text-sci-blue group-hover:bg-sci-accent group-hover:text-white group-hover:rotate-3 transition-all duration-300">
+                        <Icon className="w-5 h-5" />
+                      </div>
                     )}
-                  </span>
+                  </div>
 
-                  {/* Label */}
-                  <span className="text-xs sm:text-sm font-semibold text-black tracking-wide leading-relaxed max-w-[180px] relative z-10">
-                    {stat.label}
-                  </span>
+                  <div className="flex flex-col items-center my-auto py-2">
+                    <span className="text-3xl sm:text-4xl lg:text-4xl font-heading font-extrabold text-[#030B7D] mb-1.5 sm:mb-2 tracking-tight relative z-10 transition-colors duration-300">
+                      {stat.raw ? stat.raw : <Counter end={stat.value} suffix={stat.suffix} />}
+                    </span>
+                    <span className="text-xs sm:text-xs font-bold text-slate-900 tracking-wide leading-snug max-w-[200px] relative z-10">
+                      {stat.label}
+                    </span>
+                  </div>
 
-                  {/* Bottom accent line that grows on hover */}
-                  <span className="absolute bottom-0 left-1/2 -translate-x-1/2 h-[3px] w-0 bg-sci-accent rounded-full group-hover:w-1/2 transition-all duration-300" />
+                  <span className="absolute bottom-0 left-1/2 -translate-x-1/2 h-[3px] w-0 bg-[#030B7D] rounded-full group-hover:w-1/2 transition-all duration-300" />
                 </div>
               </ScrollReveal>
             );
@@ -400,14 +642,21 @@ function About() {
 
             <div className="text-black text-base leading-relaxed space-y-4 mb-8">
               <p>
-                Physics Instruments Co. (PICO) was incorporated in <strong>1959</strong> by the esteemed <strong>Prof. T. Krishnamurthi</strong> following his retirement as a Professor of Physics at the prestigious <strong>Presidency College, Madras</strong>.
+                Founded in <strong>1959</strong> by <strong>Prof. T. Krishnamurthi</strong> following his tenure at Presidency College, Madras, Physics Instruments Co. (PICO) brings over <strong>65 years of heritage</strong> to educational and scientific instrumentation.
               </p>
               <p>
-                For over six decades, PICO has dedicated itself to manufacturing and exporting research-grade and educational scientific equipment. Our products serve national research institutes, defense organizations, universities, and nanotech startup labs globally.
+                Our core mission is to provide high-quality, precision physics instruments—ranging from ultrasonic interferometers developed with <strong>CSIR-NPL</strong> to advanced electrospinning and chaos study systems.
               </p>
-              <p>
-                Known for accuracy, academic rigor, and durability, our product development includes notable milestones such as custom velocity measurement interferometers built in collaboration with the <strong>CSIR-National Physical Laboratory (CSIR-NPL), New Delhi</strong>.
-              </p>
+              <ul className="space-y-3 pt-2">
+                <li className="flex items-start gap-3">
+                  <CheckCircle2 className="w-5 h-5 text-[#030B7D] shrink-0 mt-0.5" />
+                  <span><strong>Research-Grade Quality:</strong> Trusted by universities, national labs, and nanotech startups across India.</span>
+                </li>
+                <li className="flex items-start gap-3">
+                  <CheckCircle2 className="w-5 h-5 text-[#030B7D] shrink-0 mt-0.5" />
+                  <span><strong>Heritage of Excellence:</strong> Built on deep academic roots and a long-standing reputation for reliability.</span>
+                </li>
+              </ul>
             </div>
 
             <div>
@@ -428,7 +677,7 @@ function About() {
               {/* Main Image - with hover zoom animation */}
               <div className="rounded-2xl overflow-hidden shadow-2xl border border-sci-light/50 bg-white group cursor-default hover:shadow-[0_20px_60px_-10px_rgba(11,59,130,0.25)] transition-all duration-500">
                 <img
-                  src='/c1.jpg'
+                  src={getAssetUrl('/c1.jpg')}
                   alt="PICO Physics Instruments Collage"
                   className="w-full h-auto object-cover transition-transform duration-700 ease-out group-hover:scale-105"
                 />
@@ -615,13 +864,13 @@ function HomeCategories() {
         {/* Section Header */}
         <div className="flex flex-col sm:flex-row sm:items-end justify-between gap-6 mb-14 text-left">
           <div>
-            <span className="font-heading text-[10px] font-bold uppercase tracking-[0.28em] text-[#1A2FD4] mb-3 inline-block">
+            <span className="font-heading text-[10px] font-bold uppercase tracking-[0.28em] text-black mb-3 inline-block">
               PRODUCT CATALOG
             </span>
-            <h2 className="font-heading text-4xl lg:text-5xl font-extrabold text-[#030B7D] tracking-tight leading-[1.1]">
+            <h2 className="font-heading text-4xl lg:text-5xl font-extrabold text-black tracking-tight leading-[1.1]">
               Browse all Categories
             </h2>
-            <p className="text-[#3A3F8A] text-sm mt-3 max-w-[480px] leading-relaxed" style={{color:'black'}}>
+            <p className="text-[#3A3F8A] text-sm sm:text-base md:text-lg mt-3 max-w-[480px] leading-relaxed" style={{color:'black'}}>
               Explore our complete list of individual instruments and scientific laboratory division setups.
             </p>
           </div>
@@ -652,7 +901,7 @@ function HomeCategories() {
               <div className="relative overflow-hidden aspect-[4/3] bg-[#F4F5FD] flex items-center justify-center">
                 {cat.image ? (
                   <img
-                    src={cat.image.startsWith('public/') ? cat.image.substring(6) : cat.image}
+                    src={getAssetUrl(cat.image.startsWith('public/') ? cat.image.substring(6) : cat.image)}
                     alt={cat.title}
                     className="w-full h-full object-cover transition-transform duration-700 ease-out group-hover:scale-[1.08]"
                   />
@@ -672,7 +921,7 @@ function HomeCategories() {
                 <h3 className="font-heading text-base font-bold text-[#030B7D] mb-2 leading-snug group-hover:text-[#1A2FD4] transition-colors duration-300">
                   {cat.title}
                 </h3>
-                <p className="text-[11px] text-slate-900 leading-relaxed mb-6 flex-grow" style={{color:'black'}}>
+                <p className="text-sm text-slate-900 leading-relaxed mb-6 flex-grow break-words" style={{color:'black'}}>
                   {cat.desc}
                 </p>
 
@@ -888,7 +1137,7 @@ function ProductShowcase({ onOpenDrawer, productsData }) {
               {/* Large Product Image container with Zoom hover */}
               <div className="relative rounded-2xl overflow-hidden shadow-2xl border border-white/5 bg-navy-deep/80 aspect-[16/10] mb-8 group">
                 <img
-                  src={item.image}
+                  src={getAssetUrl(item.image)}
                   alt={item.title}
                   className="w-full h-full object-cover transition-transform duration-[5s] group-hover:scale-103"
                 />
@@ -1157,7 +1406,7 @@ function HomeProductCard({ product, delay = 0, visible = false }) {
         <div className="relative overflow-hidden aspect-[4/3] bg-[#F4F5FD] flex items-center justify-center">
           {product.image ? (
             <img
-              src={product.image}
+              src={getAssetUrl(product.image)}
               alt={product.name}
               className="w-full h-full object-cover transition-transform duration-700 ease-out group-hover:scale-[1.08]"
             />
@@ -1176,7 +1425,7 @@ function HomeProductCard({ product, delay = 0, visible = false }) {
           <h3 className="font-heading text-sm font-bold text-[#030B7D] mb-2 leading-snug group-hover:text-[#1A2FD4] transition-colors duration-300">
             {product.name}
           </h3>
-          <p className="text-[11px] text-slate-900 leading-relaxed mb-4 flex-grow" style={{ display: '-webkit-box', WebkitLineClamp: 2, WebkitBoxOrient: 'vertical', overflow: 'hidden' }}>
+          <p className="text-sm text-slate-900 leading-relaxed mb-4 flex-grow break-words">
             {product.spec}
           </p>
 
@@ -1198,8 +1447,6 @@ function HomeProductCard({ product, delay = 0, visible = false }) {
 
 function HomeProductGrid() {
   const [cardsVisible, setCardsVisible] = useState(false);
-  const [visibleCount, setVisibleCount] = useState(8);
-  const [loading, setLoading] = useState(false);
   const sectionRef = useRef(null);
 
   useEffect(() => {
@@ -1219,16 +1466,7 @@ function HomeProductGrid() {
     return () => observer.disconnect();
   }, []);
 
-  const handleLoadMore = () => {
-    setLoading(true);
-    setTimeout(() => {
-      setVisibleCount((prev) => prev + 8);
-      setLoading(false);
-    }, 450);
-  };
-
-  const visibleProducts = HOME_PRODUCTS.slice(0, visibleCount);
-  const hasMore = visibleCount < HOME_PRODUCTS.length;
+  const visibleProducts = HOME_PRODUCTS.slice(0, 8);
 
   return (
     <section ref={sectionRef} className="py-24 bg-[#F4F5FD] relative">
@@ -1239,13 +1477,13 @@ function HomeProductGrid() {
         {/* Section Header */}
         <div className="flex flex-col sm:flex-row sm:items-end justify-between gap-6 mb-14">
           <div>
-            <span className="font-heading text-[10px] font-bold uppercase tracking-[0.28em] text-[#1A2FD4] mb-3 inline-block">
+            <span className="font-heading text-[10px] font-bold uppercase tracking-[0.28em] text-black mb-3 inline-block">
               PRODUCT CATALOG
             </span>
-            <h2 className="font-heading text-4xl lg:text-5xl font-extrabold text-[#030B7D] tracking-tight leading-[1.1]">
+            <h2 className="font-heading text-4xl lg:text-5xl font-extrabold text-black tracking-tight leading-[1.1]">
               All Instruments
             </h2>
-            <p className="text-slate-900 text-sm mt-3 max-w-[480px] leading-relaxed">
+            <p className="text-slate-900 text-sm sm:text-base md:text-lg mt-3 max-w-[480px] leading-relaxed">
               Browse our complete range of precision scientific instruments, from chaos dynamics systems to ultrasonic velocity measurement.
             </p>
           </div>
@@ -1261,7 +1499,7 @@ function HomeProductGrid() {
         </div>
 
         {/* 4-column card grid */}
-        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6"style={{color:'black'}}>
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6" style={{color:'black'}}>
           {visibleProducts.map((product, idx) => (
             <HomeProductCard
               key={product.id}
@@ -1271,26 +1509,6 @@ function HomeProductGrid() {
             />
           ))}
         </div>
-
-        {/* Load More Trigger */}
-        {hasMore && (
-          <div className="flex justify-center mt-16">
-            <button
-              onClick={handleLoadMore}
-              disabled={loading}
-              className="group inline-flex items-center justify-center gap-3 font-heading text-xs font-bold uppercase tracking-wider text-white bg-[#030B7D] hover:bg-[#1A2FD4] px-10 py-4 rounded-md transition-all duration-300 shadow-lg hover:shadow-[#030B7D]/25 hover:-translate-y-0.5 min-w-[200px]"
-            >
-              {loading ? (
-                <div className="w-4 h-4 border-2 border-white/30 border-t-white rounded-full animate-spin" />
-              ) : (
-                <>
-                  <span>Load More Instruments</span>
-                  <ChevronDown className="w-4 h-4 transition-transform duration-300 group-hover:translate-y-0.5" />
-                </>
-              )}
-            </button>
-          </div>
-        )}
       </div>
     </section>
   );
@@ -1415,10 +1633,10 @@ function Applications() {
 
         {/* Header */}
         <div className="text-left max-w-[680px] mb-16">
-          <span className="font-heading text-xs font-bold uppercase tracking-[0.25em] text-slate-500 mb-3 inline-block" style={{color:'black'}}>
+          <span className="font-heading text-xs font-bold uppercase tracking-[0.25em] text-black mb-3 inline-block">
             PICO CAPABILITIES
           </span>
-          <h2 className="text-3xl sm:text-4xl font-heading font-extrabold text-[#030B7D] mb-4 tracking-tight">
+          <h2 className="text-3xl sm:text-4xl font-heading font-extrabold text-black mb-4 tracking-tight">
             Empowering Science. Across Disciplines.
           </h2>
           <p className="text-slate-600 text-sm sm:text-base leading-relaxed" style={{color:'black'}}>
@@ -1435,7 +1653,7 @@ function Applications() {
             >
               {/* Background Image */}
               <img
-                src={panel.image}
+                src={getAssetUrl(panel.image)}
                 alt={panel.title}
                 className="absolute inset-0 w-full h-full object-cover transition-transform duration-[6s] group-hover:scale-108"
               />
@@ -1505,7 +1723,7 @@ function Clients() {
                 <div className="absolute inset-0 bg-[radial-gradient(circle_at_center,rgba(255,255,255,0.08)_0%,transparent_70%)] opacity-0 group-hover:opacity-100 transition-opacity duration-500 pointer-events-none" />
                 <div className="h-[110px] w-full flex items-center justify-center relative z-10 p-2">
                   <img
-                    src={client.logo}
+                    src={getAssetUrl(client.logo)}
                     alt={client.name}
                     className="max-h-full max-w-full object-contain transition-all duration-500 transform group-hover:scale-110"
                   />
@@ -2122,7 +2340,7 @@ function ProductDetailDrawer({ isOpen, onClose, product, onEnquireClick }) {
         <div className="p-8 overflow-y-auto flex-grow space-y-8 text-left">
           <div className="rounded-xl overflow-hidden border border-sci-light bg-sci-light/30 flex items-center justify-center h-[280px]">
             <img
-              src={product.image}
+              src={getAssetUrl(product.image)}
               alt={product.name}
               className="w-full h-full object-cover"
             />
@@ -2314,7 +2532,7 @@ export default function Home() {
       id: 'potentiometer-10w',
       category: 'Physics Lab Apparatus',
       name: '10 Wire Potentiometer',
-      image: heroLab,
+      image: '/banner/banner1.png',
       desc: 'Teakwood frame mounting 10 parallel 1-meter Constantan wires with double scale alignment for potential calibration.',
       specs: {
         'Wire Length': '10 meters total (10 x 1 meter parallel tracks)',

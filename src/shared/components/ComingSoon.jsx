@@ -1,64 +1,68 @@
 import React from 'react';
-import { Link, useSearchParams } from 'react-router-dom';
-import { ArrowLeft, Cpu, Settings, Hourglass } from 'lucide-react';
+import { Link } from 'react-router-dom';
+import { Clock, ArrowLeft, Send, Sparkles, ShieldCheck, Cpu } from 'lucide-react';
 
-export default function ComingSoon({ title = "Section Under Development" }) {
-  const [searchParams] = useSearchParams();
-  const titleParam = searchParams.get('title') || searchParams.get('search');
-  const displayTitle = titleParam ? `${titleParam}` : title;
-
+export default function ComingSoon({ title = "Page Under Development" }) {
   return (
-    <section className="min-h-[70vh] flex items-center justify-center bg-sci-light py-20 px-6 relative overflow-hidden">
-      
-      {/* Background scientific grid illustration */}
-      <div className="absolute inset-0 opacity-[0.03] pointer-events-none bg-[radial-gradient(#0B3B82_1px,transparent_1px)] [background-size:20px_20px]" />
-      
-      <div className="max-w-[560px] w-full bg-white border border-sci-light rounded-3xl p-8 sm:p-12 text-center shadow-xl relative z-10">
-        
-        {/* Animated Icon Frame */}
-        <div className="w-16 h-16 rounded-2xl bg-sci-blue/5 flex items-center justify-center text-sci-blue mx-auto mb-8 relative group">
-          <div className="absolute inset-0 rounded-2xl border border-sci-blue/20 group-hover:scale-110 transition-transform duration-300" />
-          <Hourglass className="w-7 h-7 animate-spin" style={{ animationDuration: '3s' }} />
+    <div className="min-h-[82vh] flex items-center justify-center px-4 pt-28 pb-16 sm:pt-36 sm:pb-24 bg-gradient-to-b from-slate-50 via-blue-50/40 to-slate-50 relative overflow-hidden text-slate-800">
+      {/* Decorative Background Accents */}
+      <div className="absolute top-1/4 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[600px] h-[600px] bg-blue-100/60 rounded-full blur-[100px] pointer-events-none" />
+      <div className="absolute bottom-10 right-10 w-80 h-80 bg-indigo-100/50 rounded-full blur-3xl pointer-events-none" />
+
+      {/* Subtle Light Grid overlay */}
+      <div className="absolute inset-0 bg-[linear-gradient(to_right,#030b7d08_1px,transparent_1px),linear-gradient(to_bottom,#030b7d08_1px,transparent_1px)] bg-[size:32px_32px] pointer-events-none" />
+
+      <div className="max-w-2xl w-full text-center relative z-10 bg-white/90 backdrop-blur-md p-8 sm:p-14 rounded-3xl border border-slate-200/80 shadow-xl shadow-blue-900/5">
+        {/* Badge */}
+        <div className="inline-flex items-center gap-2 px-4 py-1.5 rounded-full bg-blue-50 border border-blue-200/80 text-[#030B7D] font-heading text-xs font-semibold uppercase tracking-wider mb-6">
+          <Sparkles className="w-3.5 h-3.5 text-[#1A2FD4]" />
+          <span>Section Under Enhancement</span>
         </div>
 
-        {/* Title */}
-        <span className="font-heading text-[10px] font-bold uppercase tracking-[0.25em] text-sci-blue mb-3 inline-block">
-          PHYSICS INSTRUMENTS CO.
-        </span>
-        <h1 className="text-2xl sm:text-3xl font-heading font-extrabold text-sci-dark mb-4">
-          {displayTitle}
+        {/* Dynamic Title */}
+        <h1 className="text-3xl sm:text-4xl md:text-5xl font-heading font-extrabold text-[#030B7D] tracking-tight mb-4 leading-tight">
+          {title}
         </h1>
 
-        {/* Description */}
-        <p className="text-sci-medium text-sm sm:text-base leading-relaxed mb-8">
-          Our engineering and materials teams are currently expanding this section to provide you with detailed 
-          technical catalogs, interactive diagrams, and institutional documentation resources.
+        <p className="text-slate-600 text-sm sm:text-base md:text-lg max-w-lg mx-auto mb-8 font-normal leading-relaxed">
+          We are updating our digital platform with interactive product catalogs, technical documentation, and scientific specifications.
         </p>
 
-        {/* Bullet details */}
-        <div className="flex justify-center gap-4 flex-wrap text-xs font-semibold text-black mb-10">
-          <span className="flex items-center gap-1.5 bg-sci-light px-3 py-1.5 rounded-full">
-            <Cpu className="w-3.5 h-3.5 text-sci-blue" />
-            Specs Integration
-          </span>
-          <span className="flex items-center gap-1.5 bg-sci-light px-3 py-1.5 rounded-full">
-            <Settings className="w-3.5 h-3.5 text-sci-blue" />
-            Telemetry Logs
-          </span>
+        {/* Icon Feature */}
+        <div className="w-20 h-20 mx-auto mb-8 rounded-2xl bg-gradient-to-tr from-[#030B7D] to-[#1A2FD4] text-white flex items-center justify-center shadow-lg shadow-blue-900/20 border border-blue-200">
+          <Clock className="w-9 h-9 text-white animate-pulse" />
         </div>
 
-        {/* Go Back CTA */}
-        <div>
-          <Link 
-            to="/" 
-            className="inline-flex items-center gap-2 font-heading text-xs font-bold uppercase tracking-wider text-white bg-sci-accent px-6 py-3.5 rounded-md hover:bg-blue-700 transition-all duration-200 shadow-sm hover:shadow-glow hover:-translate-y-0.5 w-full sm:w-auto justify-center"
+        {/* Action Buttons */}
+        <div className="flex flex-col sm:flex-row items-center justify-center gap-4">
+          <Link
+            to="/"
+            className="w-full sm:w-auto inline-flex items-center justify-center gap-2.5 px-7 py-3.5 rounded-xl bg-[#030B7D] text-white font-heading font-bold text-sm hover:bg-[#1A2FD4] transition-all shadow-md hover:shadow-lg active:scale-95"
           >
             <ArrowLeft className="w-4 h-4" />
-            <span>Return to Homepage</span>
+            <span>Return to Home</span>
           </Link>
+          <a
+            href="/#contact"
+            className="w-full sm:w-auto inline-flex items-center justify-center gap-2.5 px-7 py-3.5 rounded-xl bg-slate-100 text-[#030B7D] font-heading font-bold text-sm hover:bg-slate-200 transition-all border border-slate-200/80"
+          >
+            <Send className="w-4 h-4 text-[#030B7D]" />
+            <span>Submit Direct Inquiry</span>
+          </a>
         </div>
 
+        {/* Bottom Trust Note */}
+        <div className="mt-10 pt-6 border-t border-slate-200/80 flex items-center justify-center gap-6 text-xs text-slate-500 font-medium">
+          <span className="flex items-center gap-1.5">
+            <ShieldCheck className="w-4 h-4 text-[#030B7D]" />
+            ISO Certified Quality
+          </span>
+          <span className="flex items-center gap-1.5">
+            <Cpu className="w-4 h-4 text-[#1A2FD4]" />
+            65+ Years Physics Heritage
+          </span>
+        </div>
       </div>
-    </section>
+    </div>
   );
 }
